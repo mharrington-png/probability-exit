@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exit Ticket — Conditional Probability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --crimson: #9B1C31;
+  --crimson-mid: #c0849a;
+  --ink: #1c1c1c;
+  --ink-mid: #555;
+  --ink-faint: #aaa;
+  --rule: #e4e4e0;
+  --surface: #f8f8f6;
+  --white: #fff;
+  --green: #1a6b3c;
+  --green-bg: #eaf5f0;
+  --amber: #7a4e00;
+  --amber-bg: #fdf6e8;
+  --red-bg: #fdf0f1;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; padding-bottom: 80px; }
+
+.header { background: var(--white); border-bottom: 2.5px solid var(--crimson); padding: 20px 36px; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.header-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--crimson); }
+
+.container { max-width: 660px; margin: 0 auto; padding: 36px 20px 0; }
+
+/* problem card */
+.problem-card { background: var(--white); border: 1px solid var(--rule); border-left: 4px solid var(--crimson); border-radius: 8px; padding: 22px 26px; margin-bottom: 30px; }
+.eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--crimson); margin-bottom: 10px; }
+.problem-text { font-size: 15.5px; line-height: 1.75; }
+.sock-display { display: flex; gap: 6px; margin: 16px 0 6px; flex-wrap: wrap; align-items: flex-end; }
+.sock-display svg { width: 22px; height: 22px; flex-shrink: 0; }
+
+/* waiting state */
+#ticket-body { display: none; }
+
+/* form */
+.name-row { margin-bottom: 28px; }
+.form-section { margin-bottom: 24px; }
+.section-head { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--ink); border-bottom: 1px solid var(--rule); padding-bottom: 7px; margin-bottom: 16px; display: flex; align-items: baseline; gap: 10px; }
+.pts-label { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 400; color: var(--ink-faint); }
+.field { margin-bottom: 14px; }
+label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-mid); margin-bottom: 5px; line-height: 1.45; }
+.hint { display: block; font-size: 11.5px; font-style: italic; color: var(--ink-faint); margin-top: 2px; }
+.input-row { display: flex; align-items: center; gap: 10px; }
+.input-row input[type=text] { flex: 1; }
+input[type=text], textarea {
+  width: 100%; font-family: 'DM Mono', monospace; font-size: 15px; color: var(--ink);
+  background: var(--white); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 9px 13px; outline: none; transition: border-color 0.15s, background 0.15s;
+}
+textarea { font-family: 'DM Sans', sans-serif; font-size: 14px; resize: vertical; min-height: 80px; }
+input[type=text]:focus, textarea:focus { border-color: var(--crimson-mid); }
+input[type=text].correct { border-color: var(--green); background: var(--green-bg); }
+input[type=text].wrong   { border-color: var(--crimson); background: var(--red-bg); }
+.badge { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.badge.show { opacity: 1; }
+.badge.correct { background: var(--green-bg); color: var(--green); }
+.badge.wrong   { background: var(--red-bg); color: var(--crimson); }
+
+/* name input (non-mono) */
+#sname { font-family: 'DM Sans', sans-serif; }
+#generate-btn { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--white); background: var(--crimson); border: none; border-radius: 6px; padding: 9px 22px; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+#generate-btn:hover { background: #7d1627; }
+
+/* submit */
+.submit-row { margin-top: 10px; }
+#submit-btn { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: var(--white); background: var(--crimson); border: none; border-radius: 6px; padding: 11px 34px; cursor: pointer; transition: background 0.15s, opacity 0.15s; }
+#submit-btn:hover { background: #7d1627; }
+#submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* result */
+#result-panel { display: none; margin-top: 28px; border-radius: 8px; padding: 22px 26px; border: 1px solid var(--rule); }
+#result-panel.success { background: var(--green-bg); border-color: #a8d9bc; }
+#result-panel.partial  { background: var(--amber-bg); border-color: #f0ce80; }
+#result-panel.low      { background: var(--red-bg);   border-color: #f0b8be; }
+.result-score { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 6px; }
+.result-score.success { color: var(--green); }
+.result-score.partial  { color: var(--amber); }
+.result-score.low      { color: var(--crimson); }
+.result-msg { font-size: 14px; line-height: 1.65; color: var(--ink-mid); margin-bottom: 16px; }
+.breakdown { font-size: 13px; line-height: 2; }
+.bd-row { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.bd-qlabel { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-faint); min-width: 150px; }
+.bd-result { font-weight: 500; }
+.bd-result.c { color: var(--green); }
+.bd-result.w { color: var(--crimson); }
+.bd-correct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-faint); }
+.submit-note { margin-top: 14px; font-size: 12px; font-style: italic; color: var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-label">Middlesex School &nbsp;·&nbsp; Problem Solving</span>
+  <span class="header-title">Exit Ticket — Conditional Probability</span>
+</div>
+
+<div class="container">
+
+  <!-- Name entry — generates the personalised problem -->
+  <div class="name-row">
+    <label for="sname">Enter your name to load your problem</label>
+    <div class="input-row">
+      <input type="text" id="sname" placeholder="First and last name" autocomplete="off">
+      <button id="generate-btn">Load &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Problem card (filled in by JS) -->
+  <div class="problem-card" id="problem-card" style="display:none;">
+    <div class="eyebrow">Your problem</div>
+    <p class="problem-text" id="problem-text"></p>
+    <div class="sock-display" id="sock-chips"></div>
+    <p class="problem-text" style="margin-top:12px;">Draw a complete tree diagram on paper, label every branch, then answer the questions below.</p>
+  </div>
+
+  <!-- Ticket body (questions) -->
+  <div id="ticket-body">
+
+    <div class="form-section">
+      <div class="section-head">Branch probability <span class="pts-label">1 pt</span></div>
+      <div class="field">
+        <label id="q-branch-label"></label>
+        <span class="hint">Enter as a fraction — e.g. 3/8. Decimals are not accepted.</span>
+        <div class="input-row">
+          <input type="text" id="q-branch" placeholder="e.g. 3/8" autocomplete="off">
+          <span class="badge" id="b-branch"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-head">Path probability <span class="pts-label">1 pt</span></div>
+      <div class="field">
+        <label id="q-path-label"></label>
+        <span class="hint">Multiply along a branch of your tree</span>
+        <div class="input-row">
+          <input type="text" id="q-path" placeholder="" autocomplete="off">
+          <span class="badge" id="b-path"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-head">Final answer <span class="pts-label">1 pt</span></div>
+      <div class="field">
+        <label>P(the two socks match)</label>
+        <span class="hint">Add all matching-pair branches</span>
+        <div class="input-row">
+          <input type="text" id="q-match" placeholder="" autocomplete="off">
+          <span class="badge" id="b-match"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-head">Reflection <span class="pts-label">1 pt — full credit for any honest response</span></div>
+      <div class="field">
+        <label>What is one thing you hope your teacher will clarify tomorrow?</label>
+        <textarea id="q-reflect" placeholder="Write anything that felt unclear or that you'd like more practice with..."></textarea>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button id="submit-btn">Submit answers</button>
+    </div>
+
+    <div id="result-panel">
+      <div class="result-score" id="result-score"></div>
+      <div class="result-msg"   id="result-msg"></div>
+      <div class="breakdown"    id="breakdown"></div>
+      <div class="submit-note"  id="submit-note"></div>
+    </div>
+
+  </div><!-- /ticket-body -->
+</div>
+
+<script>
+// ── Google Apps Script endpoint ──────────────────────────────────────────────
+const SHEET_URL = 'PASTE_APPS_SCRIPT_URL_HERE';
+
+// ── Drawer table ─────────────────────────────────────────────────────────────
+// Each entry: [total, red, blue]
+// All fractions computed at runtime from these three numbers.
+const DRAWERS = [
+  [6,2,4],[6,3,3],[6,4,2],
+  [7,2,5],[7,3,4],[7,4,3],[7,5,2],
+  [8,4,4],
+  [9,3,6],[9,4,5],[9,5,4],[9,6,3],
+  [10,3,7],[10,4,6],[10,5,5],[10,6,4],[10,7,3]
+];
+
+// ── Name → drawer ────────────────────────────────────────────────────────────
+function nameHash(name) {
+  // Simple djb2-style hash, pure JS, no crypto needed
+  let h = 5381;
+  for (let i = 0; i < name.length; i++) {
+    h = ((h << 5) + h) ^ name.charCodeAt(i);
+    h = h >>> 0; // keep unsigned 32-bit
+  }
+  return h;
+}
+
+function drawerForName(name) {
+  const idx = nameHash(name.trim().toLowerCase()) % DRAWERS.length;
+  const [t, r, b] = DRAWERS[idx];
+  return { t, r, b };
+}
+
+// ── Fraction arithmetic ───────────────────────────────────────────────────────
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+function frac(num, den) {
+  if (den === 0) return { num: 0, den: 1, str: '0', val: 0 };
+  const g = gcd(Math.abs(num), Math.abs(den));
+  const n = num / g, d = den / g;
+  return { num: n, den: d, str: d === 1 ? String(n) : `${n}/${d}`, val: n / d };
+}
+function fracMul(a, b) { return frac(a.num * b.num, a.den * b.den); }
+function fracAdd(a, b) { return frac(a.num * b.den + b.num * a.den, a.den * b.den); }
+
+// ── Build question set from drawer ───────────────────────────────────────────
+function buildQuestions(t, r, b) {
+  const p_r1      = frac(r, t);
+  const p_r2_r    = frac(r - 1, t - 1);  // P(2nd red | 1st red)
+  const p_b1      = frac(b, t);
+  const p_b2_b    = frac(b - 1, t - 1);  // P(2nd blue | 1st blue)
+  const p_rr      = fracMul(p_r1, p_r2_r);
+  const p_bb      = fracMul(p_b1, p_b2_b);
+  const p_match   = fracAdd(p_rr, p_bb);
+
+  // Branch question: ask about whichever color is majority (more interesting denominator)
+  // If equal, ask red
+  const askRed = r >= b;
+  const branchQ = askRed
+    ? { label: `P(second sock is red \u00a0|\u00a0 first sock was red)`,
+        answers: [p_r2_r.str, `${r-1}/${t-1}`] }
+    : { label: `P(second sock is blue \u00a0|\u00a0 first sock was blue)`,
+        answers: [p_b2_b.str, `${b-1}/${t-1}`] };
+
+  // Path question: ask about the minority color path (smaller, more discriminating)
+  const pathQ = askRed
+    ? { label: `P(both socks are blue)`,  answers: [p_bb.str] }
+    : { label: `P(both socks are red)`,   answers: [p_rr.str] };
+
+  return { p_r1, p_b1, p_rr, p_bb, p_match, branchQ, pathQ };
+}
+
+// ── Fraction parser — fractions only ─────────────────────────────────────────
+function parseVal(s) {
+  s = (s || '').trim();
+  if (s === '') return { val: NaN, invalid: false };
+  const m = s.match(/^(-?\d+)\s*\/\s*(-?\d+)$/);
+  if (m) {
+    const d = parseInt(m[2]);
+    if (d === 0) return { val: NaN, invalid: true };
+    return { val: parseInt(m[1]) / d, invalid: false };
+  }
+  // Reject plain decimals / integers with a flag
+  return { val: NaN, invalid: true, isDecimal: /^-?\d*\.?\d+$/.test(s) };
+}
+
+function checkAgainst(raw, answers) {
+  const p = parseVal(raw);
+  if (p.invalid || isNaN(p.val)) return p.invalid ? 'format' : null;
+  return answers.some(a => Math.abs(p.val - parseVal(a).val) < 1e-9) ? true : false;
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentQ = null;
+
+// ── Render problem ────────────────────────────────────────────────────────────
+document.getElementById('generate-btn').addEventListener('click', () => {
+  const rawName = document.getElementById('sname').value.trim();
+  if (!rawName) { alert('Please enter your name.'); return; }
+
+  const { t, r, b } = drawerForName(rawName);
+  currentQ = buildQuestions(t, r, b);
+
+  // Problem text
+  document.getElementById('problem-text').innerHTML =
+    `A drawer contains <strong>${t} socks</strong>: ${r} red and ${b} blue. ` +
+    `Two socks are drawn at random <strong>without replacement</strong>.`;
+
+  // SVG sock shape — rendered once per sock, colored red or blue
+  function sockSVG(color) {
+    return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 2 C8 2 7 2 7 3 L7 13 L4 16 C2.5 17.5 2.5 20 4 21.5 C5.5 23 8 23 9.5 21.5 L15 16 L15 3 C15 2 14 2 14 2 Z" fill="${color}" stroke="${color === '#c0392b' ? '#922b21' : '#1a5276'}" stroke-width="0.8"/>
+      <rect x="7" y="2" width="8" height="4" rx="1" fill="${color}" stroke="${color === '#c0392b' ? '#922b21' : '#1a5276'}" stroke-width="0.8"/>
+    </svg>`;
+  }
+
+  const redColor  = '#c0392b';
+  const blueColor = '#2471a3';
+  document.getElementById('sock-chips').innerHTML =
+    Array(r).fill(sockSVG(redColor)).join('') +
+    '<span style="display:inline-block;width:10px;"></span>' +
+    Array(b).fill(sockSVG(blueColor)).join('');
+
+  // Question labels
+  document.getElementById('q-branch-label').textContent = currentQ.branchQ.label;
+  document.getElementById('q-path-label').textContent   = currentQ.pathQ.label;
+
+  // Clear any previous answers
+  ['q-branch','q-path','q-match','q-reflect'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    el.className = el.tagName === 'TEXTAREA' ? '' : '';
+  });
+  ['b-branch','b-path','b-match'].forEach(id => {
+    document.getElementById(id).className = 'badge';
+  });
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = 'Submit answers';
+
+  // Show problem + questions
+  document.getElementById('problem-card').style.display = 'block';
+  document.getElementById('ticket-body').style.display  = 'block';
+
+  // Disable name field + button once loaded
+  document.getElementById('sname').disabled = true;
+  document.getElementById('generate-btn').disabled = true;
+  document.getElementById('generate-btn').textContent = 'Loaded';
+});
+
+// Also allow Enter key on name field
+document.getElementById('sname').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('generate-btn').click();
+});
+
+// ── Live feedback ─────────────────────────────────────────────────────────────
+function setupLiveFeedback(inputId, badgeId, getAnswers) {
+  const inp  = document.getElementById(inputId);
+  const bdg  = document.getElementById(badgeId);
+  inp.addEventListener('blur', () => {
+    if (!currentQ || !inp.value.trim()) { inp.className = ''; bdg.className = 'badge'; return; }
+    const result = checkAgainst(inp.value, getAnswers());
+    if (result === 'format') {
+      const p = parseVal(inp.value);
+      inp.className  = 'wrong';
+      bdg.textContent = p.isDecimal ? '✗ use a fraction' : '✗ invalid format';
+      bdg.className  = 'badge show wrong';
+    } else if (result === true) {
+      inp.className  = 'correct';
+      bdg.textContent = '✓ correct';
+      bdg.className  = 'badge show correct';
+    } else {
+      inp.className  = 'wrong';
+      bdg.textContent = '✗ not quite';
+      bdg.className  = 'badge show wrong';
+    }
+  });
+  inp.addEventListener('focus', () => { inp.className = ''; bdg.className = 'badge'; });
+}
+
+setupLiveFeedback('q-branch', 'b-branch', () => currentQ.branchQ.answers);
+setupLiveFeedback('q-path',   'b-path',   () => currentQ.pathQ.answers);
+setupLiveFeedback('q-match',  'b-match',  () => [currentQ.p_match.str]);
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+document.getElementById('submit-btn').addEventListener('click', async () => {
+  const name = document.getElementById('sname').value.trim();
+  if (!name || !currentQ) { alert('Please load your problem first.'); return; }
+
+  const reflect = document.getElementById('q-reflect').value.trim();
+
+  const scored = [
+    { id: 'q-branch', label: 'Branch prob',  answers: currentQ.branchQ.answers, canonical: currentQ.branchQ.answers[0] },
+    { id: 'q-path',   label: 'Path prob',    answers: currentQ.pathQ.answers,   canonical: currentQ.pathQ.answers[0]   },
+    { id: 'q-match',  label: 'P(match)',      answers: [currentQ.p_match.str],   canonical: currentQ.p_match.str        },
+  ];
+
+  let earned = 0;
+  const details = scored.map(q => {
+    const result = checkAgainst(document.getElementById(q.id).value, q.answers);
+    const ok = result === true;
+    if (ok) earned++;
+    return { ...q, ok, given: document.getElementById(q.id).value.trim() };
+  });
+
+  // Reflection: full credit if non-empty
+  const reflectCredit = reflect.length > 0 ? 1 : 0;
+  earned += reflectCredit;
+  const total = 4;
+  const pct   = Math.round(earned / total * 100);
+
+  // Result tier (out of 3 scored questions, since reflection is always full)
+  const scoredEarned = earned - reflectCredit;
+  let tier, msg;
+  if (scoredEarned === 3) {
+    tier = 'success';
+    msg  = 'All three probability answers are correct. Well done.';
+  } else if (scoredEarned === 2) {
+    tier = 'partial';
+    msg  = 'Two of three correct. Check the answer marked incorrect — make sure your branch labels reflect the updated drawer after the first draw.';
+  } else {
+    tier = 'low';
+    msg  = 'Re-draw your tree carefully. Each branch leaving a node should show the probability given one sock has already been removed.';
+  }
+
+  // Render result panel
+  const panel = document.getElementById('result-panel');
+  panel.className = tier;
+  panel.style.display = 'block';
+  const scoreEl = document.getElementById('result-score');
+  scoreEl.className = 'result-score ' + tier;
+  scoreEl.textContent = `${earned} / ${total}  (${pct}%)`;
+  document.getElementById('result-msg').textContent = msg;
+
+  const { t, r, b } = drawerForName(name);
+  document.getElementById('breakdown').innerHTML =
+    details.map(d => `
+      <div class="bd-row">
+        <span class="bd-qlabel">${d.label}</span>
+        <span class="bd-result ${d.ok ? 'c' : 'w'}">${d.ok ? '✓' : '✗  you wrote: ' + (d.given || '—')}</span>
+        ${!d.ok ? `<span class="bd-correct">→ ${d.canonical}</span>` : ''}
+      </div>`).join('') +
+    `<div class="bd-row">
+      <span class="bd-qlabel">Reflection</span>
+      <span class="bd-result c">✓ full credit</span>
+    </div>`;
+
+  // Lock form
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('submit-btn').textContent = 'Submitted';
+
+  // Send to Sheet
+  const ts = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const payload = {
+    timestamp: ts, name,
+    drawer: `${r}R ${b}B (total ${t})`,
+    earned, total, pct,
+    branch_q:   currentQ.branchQ.label,
+    branch_ans: document.getElementById('q-branch').value.trim(),
+    branch_correct: currentQ.branchQ.answers[0],
+    path_q:   currentQ.pathQ.label,
+    path_ans: document.getElementById('q-path').value.trim(),
+    path_correct: currentQ.pathQ.answers[0],
+    match_ans: document.getElementById('q-match').value.trim(),
+    match_correct: currentQ.p_match.str,
+    reflection: reflect,
+  };
+
+  const noteEl = document.getElementById('submit-note');
+  if (SHEET_URL && SHEET_URL !== 'PASTE_APPS_SCRIPT_URL_HERE') {
+    try {
+      await fetch(SHEET_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      noteEl.textContent = "Your score has been recorded. You're all set.";
+    } catch(e) {
+      noteEl.textContent = 'Could not reach the grade sheet — let your teacher know.';
+    }
+  } else {
+    noteEl.textContent = '(Grade sheet not yet configured.)';
+  }
+
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+});
+</script>
+</body>
+</html>
